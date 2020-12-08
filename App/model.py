@@ -37,6 +37,29 @@ assert config
 En este archivo definimos los TADs que vamos a usar y las operaciones
 de creacion y consulta sobre las estructuras de datos.
 """
+def newAnalyzer():
+    try:
+        citiTaxi = {
+                    'graph': None,
+                    'taxisId': None,
+                    'companias': None,
+                    'fecha': None}
+
+        citiTaxi['graph'] = gr.newGraph(datastructure='ADJ_LIST',
+                                  directed=True,
+                                  size=1000,
+                                  comparefunction=compareStations)
+        citiTaxi['taxisId'] = lt.newList('SINGLE_LINKED', compareStations)
+        citiTaxi['companias'] = m.newMap(numelementes=17, prime=109345121, maptype="CHAINING", loadfactor=1, comparefunction=None)
+        citiTaxi['fecha'] = om.newMap(omaptype='RBT',
+                                      comparefunction=compareDates)
+
+    except Exception as exp:
+        error.reraise(exp, 'model:newAnalyzer')
+
+
+
+
 
 # -----------------------------------------------------
 #                       API
@@ -44,9 +67,70 @@ de creacion y consulta sobre las estructuras de datos.
 
 # Funciones para agregar informacion al grafo
 
+def addTaxi(citiTaxi, taxi):
+    """
+    """
+    compania=taxi["company"]
+    taxiid=taxi["taxi_id"]
+    if lt.isPresent(citiTaxi["taxisId"], taxiid)==0:
+        lt.addLast(citiTaxi["taxisId"], taxiid)
+    añadir_compañia(citiTaxi, taxi, compania)
+    updateDateIndex(citiTaxi['fecha'], taxi)
+    return citiTaxi
+
+
+def añadir_compañia(citiTaxi, taxi, compania):
+    """
+    Añade el nombre de una compañia a la tabla de Hash para compañias en el catalogo
+    """
+
+    if mp.contains(citiTaxi["compania"], compania) == True:
+        n = mp.get(citiTaxi["compania"], compania)
+        dic["cantidad"]+=1
+        if lt.isPresent(citiTaxi["taxisId"], taxiid)==0:
+            lt.addLast(dic["taxis"], taxi["taxi_id"])
+    else:
+        dic={}
+        N = lt.newList("SINGLED_LINKED")
+        lt.addLast(N, taxi["taxi_id"])
+        dic["nombre"]=compania
+        dic["taxis"]=N
+        dic["cantidad"]=1
+        mp.put(citiTaxi["compania"], compania, dic)
+
+
+# ==============================
+# Arbol de fechas
+# ==============================
+
+def updateDateIndex(map, taxi):
+    """
+    Se toma la fecha del crimen y se busca si ya existe en el arbol
+    dicha fecha.  Si es asi, se adiciona a su lista de crimenes
+    y se actualiza el indice de tipos de crimenes.
+
+    Si no se encuentra creado un nodo para esa fecha en el arbol
+    se crea y se actualiza el indice de tipos de crimenes
+    """
+    occurreddate = taxi['Start_Time']
+    crimedate = datetime.datetime.strptime(occurreddate, '%Y-%m-%d %H:%M:%S')
+    entry = om.get(map, crimedate.date())
+    if entry is None:
+        datentry = newDataEntry(taxi)
+        om.put(map, crimedate.date(), datentry)
+    else:
+        datentry = me.getValue(entry)
+    lst = datentry['lstcrimes']
+    lt.addLast(lst, taxi)
+    return map
+
+
+# Funciones para agregar informacion al grafo
+
 # ==============================
 # Funciones de consulta
 # ==============================
+
 
 # ==============================
 # Funciones Helper
@@ -55,3 +139,16 @@ de creacion y consulta sobre las estructuras de datos.
 # ==============================
 # Funciones de Comparacion
 # ==============================
+
+
+def compareStations(stop, keyvaluestop):
+    """
+    Compara dos estaciones
+    """
+    stopcode = keyvaluestop['key']
+    if (stop == stopcode):
+        return 0
+    elif (stop > stopcode):
+        return 1
+    else:
+        return -1

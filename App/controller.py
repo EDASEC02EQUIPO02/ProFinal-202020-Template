@@ -40,7 +40,26 @@ recae sobre el controlador.
 #  Inicializacion del catalogo
 # ___________________________________________________
 
+def init():
+    """
+    Llama la funcion de inicializacion del modelo.
+    """
+    analyzer = model.newAnalyzer()
+    return analyzer
 
+
+def loadData(analyzer, taxisfile):
+    """
+    Carga los datos de los archivos CSV en el modelo
+    """
+    t1 = process_time()
+    taxisfile = cf.data_dir + taxisfile
+    input_file = csv.DictReader(open(taxisfile, encoding="utf-8"), delimiter=",")
+    for taxi in input_file:
+        model.addTaxi(analyzer, taxi)
+    t2  = process_time()
+    print("El tiempo de procesamiento es de: ", t2 - t1)
+    return analyzer
 # ___________________________________________________
 #  Funciones para la carga de datos y almacenamiento
 #  de datos en los modelos

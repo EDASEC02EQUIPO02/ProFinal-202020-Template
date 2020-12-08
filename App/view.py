@@ -48,6 +48,50 @@ operación seleccionada.
 #  Menu principal
 # ___________________________________________________
 
+def printMenu():
+    print("\n")
+    print("**")
+    print("Bienvenido")
+    print("1- Inicializar Analizador")
+    print("2- Cargar información de taxis")
+    print("3- Datos cargados ")
+    print("4- Requerimento A")
+    print("5- Requerimento B")
+    print("6- Requerimento C")
+    print("0- Salir")
+    print("**")
+
+
+large = "Taxi_Trips-2020-subset-large.csv"
+medium = "Taxi_Trips-2020-subset-medium.csv"
+small = "Taxi_Trips-2020-subset-small.csv"
+
+
+
 """
 Menu principal
 """
+while True:
+    printMenu()
+    inputs = input('Seleccione una opción para continuar\n>')
+
+    if int(inputs[0]) == 1:
+        print("\nInicializando....")
+        # cont es el controlador que se usará de acá en adelante
+        cont = controller.init()
+    elif int(inputs[0]) == 2:
+        pregunta = input("Que archivo desea cargar? (small, medium, large): ")
+        if pregunta == "small":
+            controller.loadData(cont, small)
+        if pregunta == "medium":
+            controller.loadData(cont, medium)
+        if pregunta == "large":
+            controller.loadData(cont, large)
+    elif int(inputs[0]) == 6:
+
+
+
+
+    else:
+        sys.exit(0)
+sys.exit(0)
