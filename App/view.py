@@ -87,11 +87,20 @@ while True:
             controller.loadData(cont, medium)
         if pregunta == "large":
             controller.loadData(cont, large)
-    elif int(inputs[0]) == 6:
-
-
-
-
+    elif int(inputs[0]) == 3:
+        pregunta = int(input("Qué información le gustaria saber?(1-algo, 2-Arbol, 3-Grafo): "))
+        if pregunta == 2:
+            print("\nCargando información de las fechas ....")
+            print('\nInformación sobre el arbol de fechas: \n')        
+            print('Altura del arbol: ' + str(controller.indexHeight(cont)))
+            print('Elementos en el arbol: ' + str(controller.indexSize(cont)))
+            print('Menor Llave: ' + str(controller.minKey(cont)))
+            print('Mayor Llave: ' + str(controller.maxKey(cont)))
+    elif int(inputs[0]) == 5:
+        initialDate = input("Ingrese la fecha que desea usar (YYYY-MM-DD): ")
+        cant = int(input("Ingrese la cantidad de taxis que desea ver: "))
+        lst = controller.getPointsbydate(cont, initialDate, cant)
+    #elif int(inputs[0]) == 6:
     else:
         sys.exit(0)
 sys.exit(0)

@@ -27,7 +27,8 @@
 import config as cf
 from App import model
 import csv
-
+from time import process_time
+import datetime
 """
 El controlador se encarga de mediar entre la vista y el modelo.
 Existen algunas operaciones en las que se necesita invocar
@@ -68,3 +69,36 @@ def loadData(analyzer, taxisfile):
 # ___________________________________________________
 #  Funciones para consultas
 # ___________________________________________________
+
+def getPointsbydate(analyzer, initialDate, cant):
+    """
+    Retorna el total de crimenes en un rango de fechas
+    """
+    initialDate = datetime.datetime.strptime(initialDate, '%Y-%m-%d')
+    
+    return model.getPointsbydate(analyzer, initialDate.date(), cant)
+
+
+
+
+"""funciones consultas de Arboles"""
+
+def crimesSize(analyzer):
+    return model.crimesSize(analyzer)
+
+
+def indexHeight(analyzer):
+    return model.indexHeight(analyzer)
+
+
+def indexSize(analyzer):
+    return model.indexSize(analyzer)
+
+
+def minKey(analyzer):
+    return model.minKey(analyzer)
+
+
+def maxKey(analyzer):
+    return model.maxKey(analyzer)
+
