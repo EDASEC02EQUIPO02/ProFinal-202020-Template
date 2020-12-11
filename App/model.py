@@ -71,6 +71,7 @@ def newAnalyzer():
 def addTaxi(citiTaxi, taxi):
     """
     """
+    "Información para el REQ A"
     compania=taxi["company"]
     taxiid=str(taxi["taxi_id"])
     if taxiid not in citiTaxi['taxisId']:
@@ -79,7 +80,66 @@ def addTaxi(citiTaxi, taxi):
     #if lt.isPresent(citiTaxi["taxisId"], taxiid)==0:
         #lt.addLast(citiTaxi["taxisId"], taxiid)
     #añadir_compañia(citiTaxi, taxi, compania)
+
+    "Información para el arbol"
     updateDateIndex(citiTaxi['fecha'], taxi)
+
+    "Información para el grafo"
+    origin = taxi['pickup_community_area']
+    destination = taxi['dropoff_community_area']
+    tiempoO = funcion_tiempos(taxi['trip_start_timestamp'])
+    tiempoD =  funcion_tiempos(taxi['trip_end_timestamp'])
+    if tiempoO != "no" or tiempoD != 'no':
+        if origin != '' or destination != '':
+            duration = taxi['trip_seconds']
+            addStation(citiTaxi, origin, tiempoO)
+            addStation(citiTaxi, destination, tiempoD)
+            origin1 = origin+'-'+tiempoO
+            destination1 = destination+'-'+tiempoD
+            addConnection(citiTaxi, origin1, destination1, duration)
+    return citiTaxi
+
+
+
+def addConnection(citiTaxi, origin, destination, duration):
+    dicc = {}
+    edge = gr.getEdge(citiTaxi['graph'], origin, destination)
+    print(edge)
+    o = origin.split('-')
+    d = destination.split('-')
+    if o[0] != d[0]:
+        if edge is None:
+            if duration == '':
+                duration = 0
+            dicc['tiempo'] = float(duration)
+            dicc['cant'] = 1
+            gr.addEdge(citiTaxi['graph'], origin, destination, dicc)
+        else:
+            edge['weight']['cant'] += 1
+            valor = edge['weight']["tiempo"]*(edge['weight']['cant']-1)
+            if duration == '':
+                duration = 0
+            valor += float(duration)
+            edge['weight']["tiempo"] = (valor)/ edge['weight']['cant']
+    return citiTaxi
+
+
+def funcion_tiempos(tiempo):
+    if tiempo != '':
+        crimedate = datetime.datetime.strptime(tiempo, '%Y-%m-%dT%H:%M:%S.%f')
+        hora = crimedate.time()
+        a = hora.strftime('%H:%M')
+    else:
+        a = "no"
+    return a
+
+def addStation(citiTaxi, stationid, tiempo):
+    """
+    Adiciona una estación como un vertice del grafo
+    """
+    if not gr.containsVertex(citiTaxi ['graph'], stationid+'-'+tiempo):
+            gr.insertVertex(citiTaxi ['graph'], stationid+'-'+tiempo)
+              
     return citiTaxi
 
 
@@ -211,6 +271,39 @@ def getPointsbydate(analyzer, initialDate, N):
             dicc[i] = formula
     mayores(dicc, N)
 
+def getPointsbyRange(citiTaxi, initialDate, finalDate, N):
+    dicc2 = {}
+    dicc = Suma_de_los_valores(citiTaxi, initialDate, finalDate)
+    for i in dicc:
+        dinero = dicc[i]['dinero']
+        if dinero != 0.0:
+            milla = dicc[i]['millas']
+            servicio = dicc[i]['servicios']
+            formula = (milla/dinero)*servicio
+            dicc2[i] = formula
+    mayores(dicc2, N)
+
+def Suma_de_los_valores(citiTaxi, initialDate, finalDate):
+    """
+    Retorna el numero de crimenes en un rago de fechas.
+    """
+    dic={}
+    cont=0
+    lst = om.keys(analyzer['fecha'], initialDate, finalDate)
+    iterator = it.newIterator(lst)
+    while it.hasNext(iterator):
+        llave = it.next(iterator)
+        llave2 = om.get(citiTaxi['fecha'], llave)
+        entry = me.getValue(llave2)
+        for i in entry:
+            if i not in dic:
+                dic[i] = {'dinero': entry[i]['dinero'], 'millas': entry[i]['millas'], 'servicios': entry[i]['servicios']}
+            else:
+                dic[i]['dinero'] += entry[i]['dinero']
+                dic[i]['millas'] += entry[i]['millas']
+                dic[i]['servicios'] += entry[i]['servicios']
+    return dic
+
     
 
 def mayores(dicc, N):
@@ -221,9 +314,11 @@ def mayores(dicc, N):
     new = sorted(lista, reverse=True)
     for i in range(0, N):
         dato = new[i]
-        lista2.append(dato)
+        for j in dicc:
+            if new[i] == dicc[j]:
+                lista2.append(j)
     for i in range(0,N):
-        print("Para el taxi: " + str(lista2[i])+ " sus puntos son: " + str(lista[i]))
+        print("Para el taxi: " + str(lista2[i])+ " sus puntos son: " + str(round(new[i], 3)))
         print("\n")
 
 
