@@ -75,9 +75,18 @@ def getPointsbydate(analyzer, initialDate, cant):
     Retorna el total de crimenes en un rango de fechas
     """
     initialDate = datetime.datetime.strptime(initialDate, '%Y-%m-%d')
-    
     return model.getPointsbydate(analyzer, initialDate.date(), cant)
 
+def getPointsbyrange(citiTaxi, initialDate, finalDate, N):
+    initialDate = datetime.datetime.strptime(initialDate, '%Y-%m-%d').date()
+    finalDate = datetime.datetime.strptime(finalDate, '%Y-%m-%d').date()
+    return model.getPointsbyRange(citiTaxi, initialDate, finalDate, N)
+
+
+def Shortway(citiTaxi, origin, destination, HoI, HoF):
+    horai = datetime.datetime.strptime(HoI, '%H:%M').time()
+    horaf = datetime.datetime.strptime(HoF, '%H:%M').time()
+    return model.Shortestway(citiTaxi, origin, destination, horai, horaf)
 
 
 

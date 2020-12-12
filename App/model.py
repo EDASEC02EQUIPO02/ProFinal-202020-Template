@@ -29,6 +29,7 @@ from DISClib.ADT import map as m
 from DISClib.ADT import list as lt
 from DISClib.ADT import orderedmap as om
 from DISClib.DataStructures import mapentry as me
+from DISClib.DataStructures import graphstructure as gra
 from DISClib.DataStructures import listiterator as it
 from DISClib.Algorithms.Graphs import scc
 from DISClib.Algorithms.Graphs import dijsktra as djk
@@ -56,6 +57,7 @@ def newAnalyzer():
     citiTaxi['companias'] = m.newMap(numelements=17, prime=109345121, maptype="CHAINING", loadfactor=1, comparefunction=None)
     citiTaxi['fecha'] = om.newMap(omaptype='RBT',
                                       comparefunction=compareDates)
+    citiTaxi['areas'] = {}
     return citiTaxi
 
 
@@ -89,8 +91,8 @@ def addTaxi(citiTaxi, taxi):
     destination = taxi['dropoff_community_area']
     tiempoO = funcion_tiempos(taxi['trip_start_timestamp'])
     tiempoD =  funcion_tiempos(taxi['trip_end_timestamp'])
-    if tiempoO != "no" or tiempoD != 'no':
-        if origin != '' or destination != '':
+    if tiempoO != "no" and tiempoD != 'no':
+        if origin != '' and destination != '':
             duration = taxi['trip_seconds']
             addStation(citiTaxi, origin, tiempoO)
             addStation(citiTaxi, destination, tiempoD)
@@ -102,25 +104,24 @@ def addTaxi(citiTaxi, taxi):
 
 
 def addConnection(citiTaxi, origin, destination, duration):
-    dicc = {}
+    dicc = citiTaxi['areas']
     edge = gr.getEdge(citiTaxi['graph'], origin, destination)
-    print(edge)
     o = origin.split('-')
     d = destination.split('-')
     if o[0] != d[0]:
         if edge is None:
             if duration == '':
                 duration = 0
-            dicc['tiempo'] = float(duration)
-            dicc['cant'] = 1
-            gr.addEdge(citiTaxi['graph'], origin, destination, dicc)
+            tiempo = float(duration)
+            dicc[origin+'-'+destination] = 1
+            gr.addEdge(citiTaxi['graph'], origin, destination, tiempo)
         else:
-            edge['weight']['cant'] += 1
-            valor = edge['weight']["tiempo"]*(edge['weight']['cant']-1)
+            dicc[origin+'-'+destination] += 1
+            valor = edge['weight']*(dicc[origin+'-'+destination]-1)
             if duration == '':
                 duration = 0
             valor += float(duration)
-            edge['weight']["tiempo"] = (valor)/ edge['weight']['cant']
+            edge['weight'] = (valor)/ dicc[origin+'-'+destination]
     return citiTaxi
 
 
@@ -141,6 +142,7 @@ def addStation(citiTaxi, stationid, tiempo):
             gr.insertVertex(citiTaxi ['graph'], stationid+'-'+tiempo)
               
     return citiTaxi
+
 
 
 def añadir_compañia(citiTaxi, taxi, compania):
@@ -289,7 +291,7 @@ def Suma_de_los_valores(citiTaxi, initialDate, finalDate):
     """
     dic={}
     cont=0
-    lst = om.keys(analyzer['fecha'], initialDate, finalDate)
+    lst = om.keys(citiTaxi['fecha'], initialDate, finalDate)
     iterator = it.newIterator(lst)
     while it.hasNext(iterator):
         llave = it.next(iterator)
@@ -320,6 +322,63 @@ def mayores(dicc, N):
     for i in range(0,N):
         print("Para el taxi: " + str(lista2[i])+ " sus puntos son: " + str(round(new[i], 3)))
         print("\n")
+
+"""REQ C"""
+
+def Shortestway(citiTaxi, origin, destination, HoI, HoF):
+    lst = []
+    dicc = {}
+    lista = gra.vertices(citiTaxi['graph'])
+    iterator = it.newIterator(lista)
+    while it.hasNext(iterator):
+        fila = it.next(iterator)
+        origin1 = fila.split('-')
+        timeO = datetime.datetime.strptime(origin1[1], '%H:%M').time()
+        if origin1[0] == origin:
+            if HoI <= timeO and timeO <= HoF:
+                lst.append(fila)
+    print(lst)
+    for i in range(0, len(lst)):
+        source = djk.Dijkstra(citiTaxi['graph'], lst[i])
+        iterator = it.newIterator(lista)
+        while it.hasNext(iterator):
+            vertice = it.next(iterator)
+            com = vertice.split('-')
+            if com[0] == destination:
+                camino = djk.hasPathTo(source, vertice)
+                if camino == True:
+                    tiempo = djk.distTo(source, vertice)
+                    ruta = djk.pathTo(source, vertice)
+                    if lst[i] not in dicc:
+                        dicc[lst[i]] = {'tiempo': tiempo, 'ruta': ruta}
+                    else:
+                        if tiempo < dicc[lst[i]]['tiempo']:
+                            dicc[lst[i]] = {'tiempo': tiempo, 'ruta': ruta}
+    menores(dicc)
+    
+def menores(dicc):
+    lista = []
+    lista2 = []
+    for i in dicc:
+        lista.append(dicc[i]['tiempo'])
+    lista.sort()
+    valor = lista[0]
+    for i in dicc:
+        if valor == dicc[i]['tiempo']:
+            print('La hora de salida es: ' + i)
+            lista1 = dicc[i]['ruta']
+            iterador = it.newIterator(lista1)
+            while it.hasNext(iterador):
+                fila = it.next(iterador)
+                lista2.append(fila)
+                print("La ruta a seguir es la siguiente:" + str(lista2))
+            print("El tiempo que tardaría es: " + str(dicc[i]['tiempo']))
+
+
+
+
+
+
 
 
 

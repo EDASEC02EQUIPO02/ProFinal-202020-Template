@@ -31,6 +31,7 @@ from App import controller
 from DISClib.ADT import stack
 import timeit
 from DISClib.ADT.graph import gr
+from time import process_time
 assert config
 
 """
@@ -98,10 +99,25 @@ while True:
             print('Menor Llave: ' + str(controller.minKey(cont)))
             print('Mayor Llave: ' + str(controller.maxKey(cont)))
     elif int(inputs[0]) == 5:
-        initialDate = input("Ingrese la fecha que desea usar (YYYY-MM-DD): ")
-        cant = int(input("Ingrese la cantidad de taxis que desea ver: "))
-        lst = controller.getPointsbydate(cont, initialDate, cant)
-    #elif int(inputs[0]) == 6:
+        respuesta = input("Desea ver la info para una fecha específica o rango? ")
+        if respuesta == "especifica":
+            initialDate = input("Ingrese la fecha que desea usar (YYYY-MM-DD): ")
+            cant = int(input("Ingrese la cantidad de taxis que desea ver: "))
+            lst = controller.getPointsbydate(cont, initialDate, cant)
+        else:
+            initialDate = input("Ingrese la fecha que desea usar de inicio (YYYY-MM-DD): ")
+            finalDate = input("Ingrese la fecha que desea usar al final (YYYY-MM-DD): ")
+            cant = int(input("Ingrese la cantidad de taxis que desea ver: "))
+            controller.getPointsbyrange(cont, initialDate, finalDate, cant)
+    elif int(inputs[0]) == 6:
+        t1 = process_time()
+        origin = input("Ingrese la estación inicial: ")
+        destination = input("Ingrese la estación Final: ")
+        horai = input("Ingrese el rango de hora inicial con formato (HH:MM): ")
+        horaf = input("Ingrese el rango de hora final con formato (HH:MM): ")
+        controller.Shortway(cont, origin, destination, horai, horaf)
+        t2 = process_time()
+        print("El tiempo de procesamiento es de: ", t2 - t1)
     else:
         sys.exit(0)
 sys.exit(0)
