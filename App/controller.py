@@ -70,6 +70,10 @@ def loadData(analyzer, taxisfile):
 #  Funciones para consultas
 # ___________________________________________________
 
+def getCantidadTaxis(citiTaxi, N):
+    return model.getCantidadTaxis(citiTaxi, N)
+
+
 def getPointsbydate(analyzer, initialDate, cant):
     """
     Retorna el total de crimenes en un rango de fechas

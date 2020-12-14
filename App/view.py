@@ -82,7 +82,7 @@ while True:
         # cont es el controlador que se usará de acá en adelante
         cont = controller.init()
     elif int(inputs[0]) == 2:
-        pregunta = input("Que archivo desea cargar? (small, medium, large): ")
+        pregunta = input("¿Qué archivo desea cargar? (small, medium, large): ")
         if pregunta == "small":
             controller.loadData(cont, small)
         if pregunta == "medium":
@@ -90,16 +90,18 @@ while True:
         if pregunta == "large":
             controller.loadData(cont, large)
     elif int(inputs[0]) == 3:
-        pregunta = int(input("Qué información le gustaria saber?(1-algo, 2-Arbol, 3-Grafo): "))
-        if pregunta == 2:
-            print("\nCargando información de las fechas ....")
-            print('\nInformación sobre el arbol de fechas: \n')        
-            print('Altura del arbol: ' + str(controller.indexHeight(cont)))
-            print('Elementos en el arbol: ' + str(controller.indexSize(cont)))
-            print('Menor Llave: ' + str(controller.minKey(cont)))
-            print('Mayor Llave: ' + str(controller.maxKey(cont)))
+        pregunta = int(input("¿Qué información le gustaría saber?: "))
+        print("\nCargando información de las fechas ....")
+        print('\nInformación sobre el árbol de fechas: \n')        
+        print('Altura del árbol: ' + str(controller.indexHeight(cont)))
+        print('Elementos en el árbol: ' + str(controller.indexSize(cont)))
+        print('Menor Llave: ' + str(controller.minKey(cont)))
+        print('Mayor Llave: ' + str(controller.maxKey(cont)))
+    elif int(inputs[0]) == 4:
+        cant= int(input("Ingrese la cantidad de taxis que desea ver: "))
+        cantidad=controller.getCantidadTaxis(cont, cant)
     elif int(inputs[0]) == 5:
-        respuesta = input("Desea ver la info para una fecha específica o rango? ")
+        respuesta = input("¿Cómo desea ver la info? (Ingrese especifica o rango): ")
         if respuesta == "especifica":
             initialDate = input("Ingrese la fecha que desea usar (YYYY-MM-DD): ")
             cant = int(input("Ingrese la cantidad de taxis que desea ver: "))

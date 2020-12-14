@@ -52,9 +52,9 @@ def newAnalyzer():
                                   directed=True,
                                   size=1000,
                                   comparefunction=compareStations)
-    #citiTaxi['taxisId'] = lt.newList('SINGLE_LINKED')
+    
     citiTaxi['taxisId'] = []
-    citiTaxi['companias'] = m.newMap(numelements=17, prime=109345121, maptype="CHAINING", loadfactor=1, comparefunction=None)
+    citiTaxi['companias'] = m.newMap(numelements=17, prime=109345121, maptype="CHAINING", loadfactor=1, comparefunction=comparer)
     citiTaxi['fecha'] = om.newMap(omaptype='RBT',
                                       comparefunction=compareDates)
     citiTaxi['areas'] = {}
@@ -75,13 +75,9 @@ def addTaxi(citiTaxi, taxi):
     """
     "Información para el REQ A"
     compania=taxi["company"]
-    taxiid=str(taxi["taxi_id"])
-    if taxiid not in citiTaxi['taxisId']:
-        citiTaxi['taxisId'].append(taxiid)
-    #print(lt.size(citiTaxi['taxisId']))
-    #if lt.isPresent(citiTaxi["taxisId"], taxiid)==0:
-        #lt.addLast(citiTaxi["taxisId"], taxiid)
-    #añadir_compañia(citiTaxi, taxi, compania)
+    if compania=="":
+        compania="Independent Owner"
+    añadir_compañia(citiTaxi, taxi, compania)
 
     "Información para el arbol"
     updateDateIndex(citiTaxi['fecha'], taxi)
@@ -149,18 +145,21 @@ def añadir_compañia(citiTaxi, taxi, compania):
     """
     Añade el nombre de una compañia a la tabla de Hash para compañias en el catalogo
     """
-    print(compania)
+    taxiid=str(taxi["taxi_id"])
+    if taxiid not in citiTaxi['taxisId']:
+        citiTaxi['taxisId'].append(taxiid)
     if m.contains(citiTaxi["companias"], compania) == True:
         n = m.get(citiTaxi["companias"], compania)
+        dic=me.getValue(n)
         dic["cantidad"]+=1
-        if lt.isPresent(citiTaxi["taxisId"], taxiid)==0:
-            lt.addLast(dic["taxis"], taxi["taxi_id"])
+        if taxiid not in dic["taxis"]:
+            dic["taxis"].append(citiTaxi["taxisId"])
     else:
         dic={}
-        N = lt.newList("SINGLED_LINKED")
-        lt.addLast(N, taxi["taxi_id"])
+        lista=[]
+        lista.append(taxiid)
         dic["nombre"]=compania
-        dic["taxis"]=N
+        dic["taxis"]=lista
         dic["cantidad"]=1
         m.put(citiTaxi["companias"], compania, dic)
 
@@ -256,6 +255,38 @@ def maxKey(analyzer):
 # ==============================
 
 
+"""REQ A"""
+
+def getCantidadTaxis(citiTaxi, N):
+    cantidadTaxis=len(citiTaxi["taxisId"])
+    companias=m.keySet(citiTaxi["companias"])
+    cantidadCompañias=lt.size(companias)
+    lista = []
+    lista2 = []
+    dic={}
+    dic2={}
+    iterador=it.newIterator(companias)
+    while it.hasNext(iterador):
+        fila=it.next(iterador)
+        llavevalor=m.get(citiTaxi["companias"], fila)
+        valor=me.getValue(llavevalor)
+        dic[fila]=len(valor["taxis"])
+        print(len(valor["taxis"]))
+        dic2[fila]=valor["cantidad"]
+    print("La cantidad de taxis es: " + str(cantidadTaxis))
+    print("")
+    print("La cantidad de compañias es: " + str(cantidadCompañias))
+    print("")
+    mayores2(dic, N, " taxis")
+    print("")
+    mayores2(dic2, N, " servicios")
+    return citiTaxi
+
+
+
+    
+
+
 """REQ B"""
 def getPointsbydate(analyzer, initialDate, N):
     """
@@ -306,6 +337,21 @@ def Suma_de_los_valores(citiTaxi, initialDate, finalDate):
                 dic[i]['servicios'] += entry[i]['servicios']
     return dic
 
+
+def mayores2(dicc, N, p):
+    lista = []
+    lista2 = []
+    for i in dicc:
+        lista.append(dicc[i])
+    new = sorted(lista, reverse=True)
+    for i in range(0, N):
+        dato = new[i]
+        for j in dicc:
+            if new[i] == dicc[j]:
+                lista2.append(j)
+    for i in range(0,N):
+        print("La compañía: " + str(lista2[i])+ " tiene "  + str(round(new[i], 3)) + p)
+
     
 
 def mayores(dicc, N):
@@ -337,7 +383,6 @@ def Shortestway(citiTaxi, origin, destination, HoI, HoF):
         if origin1[0] == origin:
             if HoI <= timeO and timeO <= HoF:
                 lst.append(fila)
-    print(lst)
     for i in range(0, len(lst)):
         source = djk.Dijkstra(citiTaxi['graph'], lst[i])
         iterator = it.newIterator(lista)
@@ -365,14 +410,15 @@ def menores(dicc):
     valor = lista[0]
     for i in dicc:
         if valor == dicc[i]['tiempo']:
-            print('La hora de salida es: ' + i)
+            ida=i.split("-")
+            print('La mejor hora de salida es: ' + ida[1])
             lista1 = dicc[i]['ruta']
             iterador = it.newIterator(lista1)
             while it.hasNext(iterador):
                 fila = it.next(iterador)
                 lista2.append(fila)
-                print("La ruta a seguir es la siguiente:" + str(lista2))
-            print("El tiempo que tardaría es: " + str(dicc[i]['tiempo']))
+            print("La ruta a seguir es la siguiente:" + str(lista2))
+            print("El tiempo que tarda es de: " + str(dicc[i]['tiempo']) + " segundos")
 
 
 
@@ -419,6 +465,16 @@ def compareDates(date1, date2):
     if (date1 == date2):
         return 0
     elif (date1 > date2):
+        return 1
+    else:
+        return -1
+
+
+def comparer(keyname, value):
+    entry = me.getKey(value)
+    if (keyname == entry):
+        return 0
+    elif (keyname > entry):
         return 1
     else:
         return -1
